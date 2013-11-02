@@ -1,7 +1,10 @@
 "use strict";
 /*
  * Author:   Ibbo (mark.ibbotson)
- * Purpose:  backlink checker
+ * Purpose:  backlink checker worker
+ *
+ * Implements agent.js as the crawl agent
+ * Crawler uses the information pulled back from agent to gather page statistics
  */
 
 var EventEmitter, url, CrawlAgent, cheerio, Crawler, DEBUG, MAX_LINKS=10, PAGE_TIMEOUT=2000;

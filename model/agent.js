@@ -3,6 +3,11 @@
 /*
  * Author:   Ibbo (mark.ibbotson)
  * Purpose:  Crawler agent
+ *
+ * Maintains a list of links seen and pending
+ * Visits each link in the list and emits its contents back toi the crawler
+ * Shifts links from pending to current to seen maintaining a fluid crawl
+ *
  */
 
 var EventEmitter, url, request, DEBUG;
@@ -12,8 +17,28 @@ url          = require('url');
 request      = require('request');
 DEBUG        = true;
 
-/*
- * Agent
+/**]
+ *
+ * @type {
+ *   { __proto__              : *,
+ *     _seen                  : Array,
+ *     _pending               : Array,
+ *     current                : null,
+ *     running                : boolean,
+ *     host                   : null,
+ *     viewed                 : number,
+ *     init                   : Function,
+ *     open                   : Function,
+ *     formatHostFromRedirect : Function,
+ *     getNext                : Function,
+ *     addLink                : Function,
+ *     findLink               : Function,
+ *     start                  : Function,
+ *     stop                   : Function,
+ *     next                   : Function,
+ *     pending                : Function,
+ *     seen                   : Function
+ * }}
  */
 var Agent = {
     __proto__  : EventEmitter.prototype, // inherit EventEmitter
@@ -77,7 +102,6 @@ var Agent = {
                     console.log("status", status);
                     self.emit('next', true, {"host": self.current});
                 }
-
             }
             else {// report back error (will continue the crawl)
                 console.log("Request error", error);

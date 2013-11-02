@@ -72,5 +72,5 @@ Crawler = {
   }
 };
 
-var crawler = Crawler.init("www.stickyeyes.com", "http://twitter.com");
+var crawler = Crawler.init("www.theregister.co.uk", "http://twitter.com");
 crawler.fetch();
