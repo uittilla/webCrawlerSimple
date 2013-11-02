@@ -1,16 +1,15 @@
 "use strict";
 
 var Crawler = require('./model/crawler');
-var crawler = Crawler.init("http://www.nationalclubgolfer.com", ["http://www.facebook.com", "http://www.twitter.com", "http://twitter.com"]);
+var crawler = Crawler.init("http://www.theregister.co.uk", ["http://www.facebook.com", "http://www.twitter.com", "http://twitter.com"]);
 
 crawler.on("error", function(error) {
-   console.log("Error", error);
+   console.error("Error", error);
 });
 
-crawler.once('stop', function(err, res){
+crawler.once('stop', function(err, res, matched, maxMatches){
 
     if(!err) {
-        console.log("Success");
         Object.keys(res).forEach(function(value){
 
             console.log("Page %d, href %s", res[value].Page, value);
@@ -22,6 +21,6 @@ crawler.once('stop', function(err, res){
             console.log();
         });
 
-        console.log("Max matches", maxMatches);
+        console.log("Matched %d, Max matches %d", matched, maxMatches);
     }
 });

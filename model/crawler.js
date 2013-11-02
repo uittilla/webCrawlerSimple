@@ -31,6 +31,9 @@ DEBUG = true;
 Crawler = {
     __proto__: EventEmitter.prototype,   // inherit EventEmitter
     badLinks: /\.(bmp|BMP|exe|EXE|jpeg|JPEG|swf|SWF|pdf|PDF|gif|GIFF|png|PNG|jpg|JPG|doc|DOC|avi|AVI|mov|MOV|mpg|MPG|tiff|TIFF|zip|ZIP|tgz|TGZ|xml|XML|xml|XML|rss|RSS|mp3|MP3|ogg|OGG|wav|WAV|rar|RAR)$/i,
+    matched: 0,
+    maxMatches: 0,
+
     /**
      * Controls the flow of the crawl
      *
@@ -108,8 +111,7 @@ Crawler = {
          * Listens for a agent stop event
          */
         agent.once('stop', function() {
-            console.log(agent.seen)
-            self.emit('stop', null, report);
+            self.emit('stop', null, report, self.matched, self.maxMatches);
             agent.removeAllListeners();
         });
 
@@ -249,16 +251,22 @@ Crawler = {
      */
     matchTargets: function ($, worker, masters) {
         // Target matching
+        var j = 0, self = this;
+
         var targets = $(masters).map(function (i, el)
         {
+            j++;
+            self.matched++;
             return {
                 "href"   : $(this).attr('href'),
                 "anchor" : $(this).html()
             };
         });
 
+        this.maxMatches = (j > self.maxMatches) ? j : self.maxMatches;
+
         return targets;
     }
-}
+};
 
 module.exports = Crawler;

@@ -153,7 +153,6 @@ var Agent = {
         this._seen.push(this.current);
 
         this.viewed++;
-
     },
 
     /**

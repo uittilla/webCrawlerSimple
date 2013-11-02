@@ -38,7 +38,7 @@ Crawler = {
      * @param response
      */
   parse: function(response) {
-      var str = ''
+      var str = '';
       var self = this;
 
       response.on('data', function (chunk) {
