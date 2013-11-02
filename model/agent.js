@@ -104,12 +104,12 @@ var Agent = {
                 }
                 else
                 {
-                    self.emit('next', true, {"host": self.current, "status": status});
+                    self.emit('next', {"host": self.current, "status": status}, null);
                 }
             }
             else
             {   // report back error (will continue the crawl)
-                self.emit('next', {"error": error, "host": options, "status": status || 0 }, self, null);
+                self.emit('next', {"error": error, "host": options, "status": status || 0 }, null);
             }
         });
     },

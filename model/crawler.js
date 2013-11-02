@@ -8,7 +8,7 @@
  * Crawler uses the information pulled back from agent to gather page statistics
  */
 
-var EventEmitter, url, CrawlAgent, cheerio, Crawler, DEBUG, MAX_LINKS=10, PAGE_TIMEOUT=2000;
+var EventEmitter, url, CrawlAgent, cheerio, Crawler, DEBUG, MAX_LINKS=50, PAGE_TIMEOUT=10000;
 
 EventEmitter = require('events').EventEmitter;
 url          = require('url');
@@ -99,7 +99,7 @@ Crawler = {
                 }
                 else
                 {
-                    self.emit("error", {"error": err, "data": data});
+                    self.emit("error", {"error": err});
                 }
 
                 // next
@@ -111,10 +111,6 @@ Crawler = {
             {
                 agent.next();
             }
-        });
-
-        agent.on("error", function(e){
-           console.log("Caught", e);
         });
 
         /**
