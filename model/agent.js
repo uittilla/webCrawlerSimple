@@ -76,16 +76,16 @@ var Agent = {
         options  = {                           // options for the request
             "uri"            : self.current,
             "timeout"        : 10000,          // initial timeout
-            "maxRedirects"   : 4,              // max redirects allowed
+            "maxRedirects"   : 8,              // max redirects allowed
             "followRedirect" : !!(self.viewed === 0),
-            "encoding"       : null,
-            "retries"        : 1,
+            "encoding"       : 'utf-8',
+            "retries"        : 2,
             "headers"        : {
                 'User-Agent': 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/536.11 (KHTML, like Gecko) Ubuntu/12.04 Chromium/20.0.1132.47 Chrome/20.0.1132.47'
             }
         };
 
-        // request module in action
+        // make the request
         request(options, function (error, res, body)
         {
             if(!error)
@@ -104,20 +104,18 @@ var Agent = {
                 }
                 else
                 {
-                    console.log("status", status);
-                    self.emit('next', true, {"host": self.current});
+                    self.emit('next', true, {"host": self.current, "status": status});
                 }
             }
             else
             {   // report back error (will continue the crawl)
-                console.log("Request error", error);
                 self.emit('next', {"error": error, "host": options, "status": status || 0 }, self, null);
             }
         });
     },
 
     /**
-     * If a redirect is encountered we need to format our ost to reflect it
+     * If a redirect is encountered we need to format our host to reflect it
      * If we do not do this we wont be finding valid host to domain internal links
      * @param redirects
      */
@@ -137,11 +135,11 @@ var Agent = {
         // stop when pending is empty
         if(this.pending() === 0 && this.viewed > 1)
         {
-            return this.emit('stop');  // and emit a stop
+            this.stop();  // and emit a stop
         }
 
         // shift pending to current
-        if(this.viewed > 0)
+        if(this.viewed > 0 && this._pending.length > 0)
         {
             this.current = url.resolve(this.host, this._pending.shift());
         }
@@ -152,6 +150,7 @@ var Agent = {
         // shift current to seen
         this._seen.push(this.current);
 
+        // increment viewed
         this.viewed++;
     },
 
@@ -202,7 +201,6 @@ var Agent = {
         this.emit('stop');
         this.removeAllListeners();
     },
-
 
     /**
      * Get next page

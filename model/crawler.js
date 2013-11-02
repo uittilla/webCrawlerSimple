@@ -1,4 +1,5 @@
 "use strict";
+
 /*
  * Author:   Ibbo (mark.ibbotson)
  * Purpose:  backlink checker worker
@@ -7,7 +8,7 @@
  * Crawler uses the information pulled back from agent to gather page statistics
  */
 
-var EventEmitter, url, CrawlAgent, cheerio, Crawler, DEBUG, MAX_LINKS=100, PAGE_TIMEOUT=2000;
+var EventEmitter, url, CrawlAgent, cheerio, Crawler, DEBUG, MAX_LINKS=10, PAGE_TIMEOUT=2000;
 
 EventEmitter = require('events').EventEmitter;
 url          = require('url');
@@ -63,12 +64,14 @@ Crawler = {
 
                 if(!err) {
 
+                    // Set up Cheerio
                     var $ = cheerio.load(data.body, {
                         lowerCaseTags           : true,
                         lowerCaseAttributeNames : true,
                         ignoreWhitespace        : true
                     });
 
+                    // Grab and parse more links
                     if( grab && (agent.pending() + visited_count < MAX_LINKS) )
                     {
                         console.log("Got ", agent.pending() + visited_count);
@@ -83,12 +86,16 @@ Crawler = {
                     }
 
                     targets               = self.matchTargets($, agent, master_regex);
-                    report[agent.current] = {
-                        "Page"    : agent.viewed,
-                        "Targets" : targets
-                    };
+                    report[agent.current] = {"Page": agent.viewed, "Targets" : targets};
 
-                    console.log(agent.viewed, agent.current, report[agent.current].Targets.length);
+                    console.log(
+                        "Page %d, Current %s, Targets %d, Matched %d, Max Matches %d",
+                        agent.viewed,
+                        agent.current,
+                        report[agent.current].Targets.length,
+                        self.matched,
+                        self.maxMatches
+                    );
                 }
                 else
                 {
@@ -102,9 +109,12 @@ Crawler = {
             }
             catch(e)
             {
-                console.log("ERROR", e);
                 agent.next();
             }
+        });
+
+        agent.on("error", function(e){
+           console.log("Caught", e);
         });
 
         /**
@@ -200,18 +210,15 @@ Crawler = {
         {
             var href = $(this).attr('href');
 
-            if(href && href !== undefined && href !== '')
-            {
-                // lowercase the url (another anti web crawling pattern)
-                href = href.trim().toLowerCase();
+            // lowercase the url (another anti web crawling pattern)
+            href = href.trim().toLowerCase();
 
-                // check for link locality
-                var isLocal = (href.substring(0,4) === "http") ? regExp.test(href) : true;
+            // check for link locality
+            var isLocal = (href.substring(0,4) === "http") ? regExp.test(href) : true;
 
-                if(isLocal && !/^#/.test(href)) {
-                    // returns a resolved link to domain link
-                    return url.resolve(agent.host, href);
-                }
+            // returns a resolved link to domain link
+            if(isLocal && !/^(#|javascript|mailto)/.test(href) ) {
+                return url.resolve(agent.host, href);
             }
         });
 
