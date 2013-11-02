@@ -75,7 +75,7 @@ var Agent = {
                 }
                 else {
                     console.log("status", status);
-                    self.emit('next', true, {});
+                    self.emit('next', true, {"host": self.current});
                 }
 
             }

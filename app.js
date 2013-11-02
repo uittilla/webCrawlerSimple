@@ -1,7 +1,7 @@
 "use strict";
 
 var Crawler = require('./model/crawler');
-var crawler = Crawler.init("http://www.stickyeyes.co.uk", ["http://www.facebook.com", "http://www.twitter.com", "http://twitter.com"]);
+var crawler = Crawler.init("http://www.theregister.co.uk/", ["http://www.facebook.com", "http://www.twitter.com", "http://twitter.com"]);
 
 crawler.on("error", function(error) {
    console.log("Error", error);
