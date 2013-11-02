@@ -86,24 +86,30 @@ var Agent = {
         };
 
         // request module in action
-        request(options, function (error, res, body) {
-            if(!error) {
+        request(options, function (error, res, body)
+        {
+            if(!error)
+            {
                 status = res.statusCode;
 
                 // Redirects found under this.redirects
-                if (this.redirects && this.redirects.length > 0) {
+                if (this.redirects && this.redirects.length > 0)
+                {
                     self.formatHostFromRedirect(this.redirects);
                 }
 
-                if(status < 400) {
+                if(status < 400)
+                {
                    self.emit('next', null, {"body": body, "status": status, "host": self.host});
                 }
-                else {
+                else
+                {
                     console.log("status", status);
                     self.emit('next', true, {"host": self.current});
                 }
             }
-            else {// report back error (will continue the crawl)
+            else
+            {   // report back error (will continue the crawl)
                 console.log("Request error", error);
                 self.emit('error', {"error": error, "host": options, "status": status || 0 }, self, null);
             }
@@ -132,23 +138,23 @@ var Agent = {
         // stop when pending is empty
         if(this.pending() === 0 && this.viewed > 1)
         {
-            this.emit('stop');               // and emit a stop
+            return this.emit('stop');  // and emit a stop
         }
-        else
+
+        // shift pending to current
+        if(this.viewed > 0)
         {
-            if(this.viewed > 0) {
-                // shift pending to current
-                this.current = url.resolve(this.host, this._pending.shift());
-            }
-
-            // crawl current
-            this.open();
-
-            // shift current to seen
-            this._seen.push(this.current);
-
-            this.viewed++;
+            this.current = url.resolve(this.host, this._pending.shift());
         }
+
+        // crawl current
+        this.open();
+
+        // shift current to seen
+        this._seen.push(this.current);
+
+        this.viewed++;
+
     },
 
     /**
@@ -164,16 +170,21 @@ var Agent = {
      * @return bool
      */
     findLink: function(link) {
-        for(var l in this._pending) {
+        // check pending
+        for(var l in this._pending)
+        {
             if(this._pending[l] === link)
                 return true;
         }
 
-        for(var l in this._seen) {
+        // check seen
+        for(var l in this._seen)
+        {
             if(this._seen[l] === link)
                 return true;
         }
 
+        // check current
         return link === this.current;
     },
 

@@ -30,11 +30,9 @@ DEBUG = true;
  */
 Crawler = {
     __proto__: EventEmitter.prototype,   // inherit EventEmitter
-
+    badLinks: /\.(bmp|BMP|exe|EXE|jpeg|JPEG|swf|SWF|pdf|PDF|gif|GIFF|png|PNG|jpg|JPG|doc|DOC|avi|AVI|mov|MOV|mpg|MPG|tiff|TIFF|zip|ZIP|tgz|TGZ|xml|XML|xml|XML|rss|RSS|mp3|MP3|ogg|OGG|wav|WAV|rar|RAR)$/i,
     /**
      * Controls the flow of the crawl
-     *
-     *
      *
      * @param host
      * @param masters
@@ -44,14 +42,18 @@ Crawler = {
 
         var report, master_regex, agent, self, $, internals, grab, visited_count, targets;
 
-        agent         = CrawlAgent.init(host);
-        self          = this;
-        internals     = [];
-        grab          = true;
-        visited_count = 0;
-        report        = {};
+        agent         = CrawlAgent.init(host);       // Agent
+        self          = this;                        // map this for scope
+        internals     = [];                          // internal link storage
+        grab          = true;                        // indicate to grab links or not
+        visited_count = 0;                           // tally of visited pages
+        report        = {};                          // report container
+
         master_regex  = this.createTargetRegex(masters);
 
+        /**
+         * Catch agent next signals
+         */
         agent.on('next', function(err, data) {
             try {
                 visited_count++;
@@ -64,15 +66,15 @@ Crawler = {
                         ignoreWhitespace        : true
                     });
 
-                    if( grab && (agent.pending() + visited_count < MAX_LINKS) ) {
-
-                        internals = self.getLinks($, agent, data);
-                        internals = self.dropDuplicates(internals);
-                        internals = self.dropUndesirables(internals);
-
-                        self.addNewLinks(agent, internals, visited_count);
-
-                    } else {
+                    if( grab && (agent.pending() + visited_count < MAX_LINKS) )
+                    {
+                        internals = self.getLinks($, agent, data);         // grab all links
+                        internals = self.dropDuplicates(internals);        // de dupe
+                        internals = self.dropUndesirables(internals);      // drop bad file types
+                        self.addNewLinks(agent, internals, visited_count); // save for crawling
+                    }
+                    else
+                    {
                         grab = false;
                     }
 
@@ -82,9 +84,10 @@ Crawler = {
                         "Targets" : targets
                     };
 
-                    console.log(agent.current, report[agent.current].Targets.length);
-
-                } else {
+                    console.log(agent.viewed, agent.current, report[agent.current].Targets.length);
+                }
+                else
+                {
                     self.emit("error", {"error": err, "data": data});
                     agent.next();
                 }
@@ -101,7 +104,9 @@ Crawler = {
             }
         });
 
-        // Listens for a agent stop event
+        /**
+         * Listens for a agent stop event
+         */
         agent.once('stop', function() {
             self.emit('stop', null, report);
             agent.removeAllListeners();
@@ -133,9 +138,11 @@ Crawler = {
      * @returns {Array}
      */
     dropUndesirables: function(links) {
+        var self = this;
+
         // finally drop any of the following bad urls
         links = links.filter(function (elem, pos) {
-            return !(/\.(bmp|BMP|exe|EXE|jpeg|JPEG|swf|SWF|pdf|PDF|gif|GIFF|png|PNG|jpg|JPG|doc|DOC|avi|AVI|mov|MOV|mpg|MPG|tiff|TIFF|zip|ZIP|tgz|TGZ|xml|XML|xml|XML|rss|RSS|mp3|MP3|ogg|OGG|wav|WAV|rar|RAR)$/i).test(elem);
+            return !(self.badLinks).test(elem);
         });
 
         return links;
@@ -160,7 +167,8 @@ Crawler = {
 
         for (master in masters)
         {
-            if(masters.hasOwnProperty(master)) {
+            if(masters.hasOwnProperty(master))
+            {
                 term = masters[master];
                 master_regex += 'a[href^="' + term + '"],';
             }
@@ -189,8 +197,8 @@ Crawler = {
         {
             var href = $(this).attr('href');
 
-            if(href && href !== undefined && href !== '') {
-
+            if(href && href !== undefined && href !== '')
+            {
                 // lowercase the url (another anti web crawling pattern)
                 href = href.trim().toLowerCase();
 
