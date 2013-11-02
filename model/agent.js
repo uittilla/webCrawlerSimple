@@ -5,7 +5,7 @@
  * Purpose:  Crawler agent
  *
  * Maintains a list of links seen and pending
- * Visits each link in the list and emits its contents back toi the crawler
+ * Visits each link in the list and emits its contents back to the crawler
  * Shifts links from pending to current to seen maintaining a fluid crawl
  *
  */
@@ -111,9 +111,8 @@ var Agent = {
             else
             {   // report back error (will continue the crawl)
                 console.log("Request error", error);
-                self.emit('error', {"error": error, "host": options, "status": status || 0 }, self, null);
+                self.emit('next', {"error": error, "host": options, "status": status || 0 }, self, null);
             }
-
         });
     },
 
@@ -158,7 +157,7 @@ var Agent = {
     },
 
     /**
-     * add a new link (if not exists) to _pending
+     * Add a new link to _pending
      * @param link
      */
     addLink: function(link) {
@@ -166,7 +165,7 @@ var Agent = {
     },
 
     /**
-     * ensures we do not have duplicate links
+     * Ensures we do not have duplicate links
      * @return bool
      */
     findLink: function(link) {
@@ -189,7 +188,7 @@ var Agent = {
     },
 
     /**
-     * Start the agent
+     * Starts the agent
      */
     start: function () {
         this.running = true;
@@ -197,7 +196,7 @@ var Agent = {
     },
 
     /**
-     * Stops the crawl
+     * Stops the agent
      */
     stop: function () {
         this.running = false;
@@ -207,14 +206,14 @@ var Agent = {
 
 
     /**
-     * simple agent method to kick next
+     * Get next page
      */
     next: function () {
         this.getNext();
     },
 
     /**
-     *
+     * Return the number of pages pending
      * @return int
      */
     pending: function() {
@@ -222,7 +221,7 @@ var Agent = {
     },
 
     /**
-     *
+     * Return the number of pages seen
      * @return int
      */
     seen: function () {

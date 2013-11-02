@@ -68,6 +68,7 @@ Crawler = {
 
                     if( grab && (agent.pending() + visited_count < MAX_LINKS) )
                     {
+                        console.log("Got ", agent.pending() + visited_count);
                         internals = self.getLinks($, agent, data);         // grab all links
                         internals = self.dropDuplicates(internals);        // de dupe
                         internals = self.dropUndesirables(internals);      // drop bad file types
