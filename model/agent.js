@@ -76,7 +76,7 @@ var Agent = {
         options  = {                           // options for the request
             "uri"            : self.current,
             "timeout"        : 10000,          // initial timeout
-            "maxRedirects"   : 8,              // max redirects allowed
+            "maxRedirects"   : 4,              // max redirects allowed
             "followRedirect" : !!(self.viewed === 0),
             "encoding"       : 'utf-8',
             "retries"        : 2,
@@ -93,8 +93,9 @@ var Agent = {
                 status = res.statusCode;
 
                 // Redirects found under this.redirects
-                if (this.redirects && this.redirects.length > 0)
+                if (this.redirects)
                 {
+                    status = this.redirects[this.redirects.length - 1].statusCode;  // we want the status of a redirect
                     self.formatHostFromRedirect(this.redirects);
                 }
 
@@ -121,7 +122,6 @@ var Agent = {
      */
     formatHostFromRedirect: function(redirects) {
         var location = redirects[redirects.length - 1].redirectUri,
-            status   = redirects[redirects.length - 1].statusCode,
             tmp      = url.parse(location);
 
         this.host =  tmp.protocol + "//" + (tmp.host || tmp.hostname);
@@ -131,7 +131,6 @@ var Agent = {
      * shifts around _pending and _seen (reflecting our crawl)
      */
     getNext: function() {
-
         // stop when pending is empty
         if(this.pending() === 0 && this.viewed > 1)
         {

@@ -2,7 +2,7 @@
 
 var Crawler = require('./model/crawler');
 
-var crawler = Crawler.init("http://www.nationalclubgolfer.com", ["http://www.facebook.com", "http://www.twitter.com", "http://twitter.com"]);
+var crawler = Crawler.init("http://www.bbc.com", ["http://www.facebook.com", "http://www.twitter.com", "http://twitter.com"]);
 
 crawler.on("error", function(error) {
     console.error("Error", error);

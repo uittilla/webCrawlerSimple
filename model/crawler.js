@@ -8,12 +8,12 @@
  * Crawler uses the information pulled back from agent to gather page statistics
  */
 
-var EventEmitter, url, CrawlAgent, cheerio, Crawler, DEBUG, MAX_LINKS=50, PAGE_TIMEOUT=10000;
+var EventEmitter, url, CrawlAgent, cheerio, Crawler, DEBUG, MAX_LINKS=10, PAGE_TIMEOUT=1000;
 
 EventEmitter = require('events').EventEmitter;
 url          = require('url');
-CrawlAgent   = require('./agent');
 cheerio      = require('cheerio');
+CrawlAgent   = require('./agent');
 
 DEBUG = true;
 
@@ -55,17 +55,40 @@ Crawler = {
 
         master_regex  = this.createTargetRegex(masters);
 
+        this.listen(agent, internals, grab, visited_count, report, master_regex, targets);
+
+        // Setup complete start the crawl
+        agent.start();
+
+        return this;
+    },
+
+    /**
+     * Listen for event signals
+     *
+     * @param agent
+     * @param internals
+     * @param grab
+     * @param visited_count
+     * @param report
+     * @param master_regex
+     * @param targets
+     */
+    listen: function(agent, internals, grab, visited_count, report, master_regex, targets) {
+        var self = this, $=null;
         /**
          * Catch agent next signals
          */
-        agent.on('next', function(err, data) {
-            try {
+        agent.on('next', function(err, data)
+        {
+            try
+            {
                 visited_count++;
 
-                if(!err) {
-
+                if(!err)
+                {
                     // Set up Cheerio
-                    var $ = cheerio.load(data.body, {
+                    $ = cheerio.load(data.body, {
                         lowerCaseTags           : true,
                         lowerCaseAttributeNames : true,
                         ignoreWhitespace        : true
@@ -89,9 +112,10 @@ Crawler = {
                     report[agent.current] = {"Page": agent.viewed, "Targets" : targets};
 
                     console.log(
-                        "Page %d, Current %s, Targets %d, Matched %d, Max Matches %d",
+                        "Page %d, Current %s, Status %d, Targets %d, Matched %d, Max Matches %d",
                         agent.viewed,
                         agent.current,
+                        data.status,
                         report[agent.current].Targets.length,
                         self.matched,
                         self.maxMatches
@@ -103,12 +127,14 @@ Crawler = {
                 }
 
                 // next
-                setTimeout(function() {
+                setTimeout(function()
+                {
                     agent.next();
+
                 }, PAGE_TIMEOUT);
             }
             catch(e)
-            {
+            {   console.log(e)
                 agent.next();
             }
         });
@@ -116,15 +142,11 @@ Crawler = {
         /**
          * Listens for a agent stop event
          */
-        agent.once('stop', function() {
+        agent.once('stop', function()
+        {
             self.emit('stop', null, report, self.matched, self.maxMatches);
             agent.removeAllListeners();
         });
-
-        // Setup complete start the crawl
-        agent.start();
-
-        return this;
     },
 
     /**
@@ -134,7 +156,8 @@ Crawler = {
      * @returns {Array}
      */
     dropDuplicates: function(links) {
-        links = links.filter(function (elem, pos) {
+        links = links.filter(function (elem, pos)
+        {
             return links.indexOf(elem) === pos;
         });
 
@@ -150,7 +173,8 @@ Crawler = {
         var self = this;
 
         // finally drop any of the following bad urls
-        links = links.filter(function (elem, pos) {
+        links = links.filter(function (elem, pos)
+        {
             return !(self.badLinks).test(elem);
         });
 
@@ -206,15 +230,19 @@ Crawler = {
         {
             var href = $(this).attr('href');
 
-            // lowercase the url (another anti web crawling pattern)
-            href = href.trim().toLowerCase();
+            if(href && href !== undefined)
+            {
+                // lowercase the url (another anti web crawling pattern)
+                href = href.trim().toLowerCase();
 
-            // check for link locality
-            var isLocal = (href.substring(0,4) === "http") ? regExp.test(href) : true;
+                // check for link locality
+                var isLocal = (href.substring(0,4) === "http") ? regExp.test(href) : true;
 
-            // returns a resolved link to domain link
-            if(isLocal && !/^(#|javascript|mailto)/.test(href) ) {
-                return url.resolve(agent.host, href);
+                // returns a resolved link to domain link
+                if(isLocal && !/^(#|javascript|mailto)/.test(href) )
+                {
+                    return url.resolve(agent.host, href);
+                }
             }
         });
 
