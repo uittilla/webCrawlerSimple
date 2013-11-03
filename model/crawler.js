@@ -8,7 +8,7 @@
  * Crawler uses the information pulled back from agent to gather page statistics
  */
 
-var EventEmitter, url, CrawlAgent, cheerio, Crawler, DEBUG, MAX_LINKS=10, PAGE_TIMEOUT=1000;
+var EventEmitter, url, CrawlAgent, cheerio, Crawler, DEBUG, MAX_LINKS=5, PAGE_TIMEOUT=1000;
 
 EventEmitter = require('events').EventEmitter;
 url          = require('url');
@@ -44,9 +44,10 @@ Crawler = {
      */
     init: function(host, masters) {
 
+        console.log("init", host);
         var report, master_regex, agent, self, $, internals, grab, visited_count, targets;
 
-        agent         = CrawlAgent.init(host);       // Agent
+        agent         = Object.create(CrawlAgent).init(host);       // Agent
         self          = this;                        // map this for scope
         internals     = [];                          // internal link storage
         grab          = true;                        // indicate to grab links or not
@@ -126,17 +127,31 @@ Crawler = {
                     self.emit("error", {"error": err});
                 }
 
-                // next
-                setTimeout(function()
+                // stop when pending is empty
+                if(agent.pending() === 0 && agent.seen() > 1)
                 {
-                    agent.next();
+                    agent.stop();
+                }
+                else
+                {
+                    // next
+                    setTimeout(function()
+                    {
+                        agent.next();
 
-                }, PAGE_TIMEOUT);
+                    }, PAGE_TIMEOUT);
+                }
             }
             catch(e)
-            {   console.log(e)
+            {   self.emit("error", {"error": e});
                 agent.next();
             }
+        });
+
+        agent.once('error', function()
+        {
+            self.emit("error", {"error": err});
+            agent.next();
         });
 
         /**

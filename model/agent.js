@@ -56,7 +56,7 @@ var Agent = {
      * @returns {*}
      */
     init: function (host) {               // bootup
-        this.current   = host;            // current page to visit
+        this.current = host;              // current page to visit
 
         // build our master host
         var tmp   = url.parse(host);
@@ -93,7 +93,7 @@ var Agent = {
                 status = res.statusCode;
 
                 // Redirects found under this.redirects
-                if (this.redirects)
+                if (this.redirects && this.redirects.length > 0)
                 {
                     status = this.redirects[this.redirects.length - 1].statusCode;  // we want the status of a redirect
                     self.formatHostFromRedirect(this.redirects);
@@ -131,14 +131,9 @@ var Agent = {
      * shifts around _pending and _seen (reflecting our crawl)
      */
     getNext: function() {
-        // stop when pending is empty
-        if(this.pending() === 0 && this.viewed > 1)
-        {
-            this.stop();  // and emit a stop
-        }
 
         // shift pending to current
-        if(this.viewed > 0 && this._pending.length > 0)
+        if(this.seen() > 0 && this.pending() > 0)
         {
             this.current = url.resolve(this.host, this._pending.shift());
         }
@@ -213,7 +208,7 @@ var Agent = {
      * @return int
      */
     pending: function() {
-        return this._pending.length || 0;
+        return (this._pending.length || 0);
     },
 
     /**
@@ -221,7 +216,7 @@ var Agent = {
      * @return int
      */
     seen: function () {
-        return this._seen.length || 0;
+        return (this._seen.length || 0);
     }
 };
 
