@@ -1,32 +1,47 @@
 "use strict";
 
-var Crawler = require('./model/crawler_proto');
-
-var targets = ["http://www.facebook.com", "http://www.twitter.com", "http://twitter.com"];
-var links   = ["http://www.bbc.co.uk", "http://www.theregister.co.uk", "http://slashdot.org", "http://www.thedailymash.co.uk", "http://www.theguardian.co.uk"];
+var Crawler  = require('./model/crawler_proto');
+var Queue    = require('./model/queue');
+var jobQueue = new Queue('default');
+var numJobs  = 2;
+var job;
 
 function listen(crawler) {
+    var target;
+    
     crawler.on("error", function(error) {
         console.error("Error", error);
     });
 
-    crawler.on('stop', function(err, res, matched, maxMatches) {
+    crawler.on('stop', function(err, id, res, matched, maxMatches) {
 
         if(!err) {
-            console.log("Job complete");
-            Object.keys(res).forEach(function(value){
-              console.log("Page: %d, href: %s", res[value].Page, value);
-
-              for(var target in (res[value].Targets)) {
-                console.log("Target: %s, Anchor: %s", res[value].Targets[target].href, res[value].Targets[target].anchor);
-              }               
-          });
+          console.log("Job complete", id);
+         /* Object.keys(res).forEach(function(value){
+              console.log("Page: %d, href: %s, Found targets #%d", res[value].Page, value, res[value].Targets.length);
+          });*/
 
           console.log("Matched %d, Max matches %d", matched, maxMatches);
+          
+          jobQueue.deleteJob(id);
         }
     });
 }
 
-for(var i in links) {
-   listen(new Crawler(links[i], targets)); 
+while(numJobs--) {
+    jobQueue.getJob();
 }
+
+jobQueue.on('jobReady', function job(_job) {
+    var data = JSON.parse(_job.data);
+    listen(new Crawler(_job.id, data.link, data.targets));      
+});
+
+jobQueue.on('jobDeleted', function (id, msg) {
+    console.log("Deleted", id, msg);
+    jobQueue.disconnect();
+
+    setTimeout(function(){
+       jobQueue.getJob();
+    }, 1000);
+});
