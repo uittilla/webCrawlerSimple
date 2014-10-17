@@ -83,7 +83,10 @@ Agent.prototype.open = function() {
     });
 }
 
-
+/**
+ * On redirect change out host details
+ * @param redirects
+ */
 Agent.prototype.formatHostFromRedirect = function(redirects) {
     var location = redirects[redirects.length - 1].redirectUri,
         tmp      = url.parse(location);
@@ -91,6 +94,9 @@ Agent.prototype.formatHostFromRedirect = function(redirects) {
     this.host =  tmp.protocol + "//" + (tmp.host || tmp.hostname);
 }
 
+/**
+ * Gets the next link to visit
+ */
 Agent.prototype.getNext = function() {
 
     // shift pending to current
@@ -109,6 +115,10 @@ Agent.prototype.getNext = function() {
     this.viewed++;
 }
 
+/**
+ * Adds link to pending array
+ * @param link
+ */
 Agent.prototype.addLink = function(link) {
     this._pending.push(link);
 }

@@ -76,6 +76,14 @@ Queue.prototype.deleteJob = function(id) {
     });
 }
 
+Queue.prototype.statsTube = function(tube) {
+    client.stats_tube(tube).onSuccess(function (data) {
+        console.log(data);
+        self.emit('statsTube', data);
+        //client.disconnect();
+    });
+}
+
 /**
  * Kill the connection
  */

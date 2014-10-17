@@ -8,7 +8,7 @@
  * Crawler uses the information pulled back from agent to gather page statistics
  */
 
-var EventEmitter, url, CrawlAgent, cheerio, Crawler, utils, DEBUG, MAX_LINKS=10, PAGE_TIMEOUT=2000;
+var EventEmitter, url, CrawlAgent, cheerio, Crawler, utils, DEBUG, MAX_LINKS=5, PAGE_TIMEOUT=2000;
 
 EventEmitter = require('events').EventEmitter;
 url          = require('url');
@@ -35,7 +35,7 @@ var Crawler = function(id, host, masters) {
    
    master_regex  = this.createTargetRegex(masters);
 
-   this.listen(agent, internals, grab, visited_count, report, master_regex, targets);
+   this.listen(id, agent, internals, grab, visited_count, report, master_regex, targets);
 
    // Setup complete start the crawl
    agent.start();   
@@ -55,7 +55,7 @@ utils.inherits(Crawler, EventEmitter);
  * @param master_regex
  * @param targets
  */
-Crawler.prototype.listen = function(agent, internals, grab, visited_count, report, master_regex, targets) {
+Crawler.prototype.listen = function(id, agent, internals, grab, visited_count, report, master_regex, targets) {
     var self = this, $=null;
     /**
      * Catch agent next signals
@@ -92,15 +92,17 @@ Crawler.prototype.listen = function(agent, internals, grab, visited_count, repor
           targets               = self.matchTargets($, agent, master_regex);
           report[agent.current] = {"Page": agent.viewed, "Targets" : targets};
 
-            console.log(
-                "Page %d, Current %s, Status %d, Targets %d, Matched %d, Max Matches %d",
-                agent.viewed,
-                agent.current,
-                data.status,
-                report[agent.current].Targets.length,
-                self.matched,
-                self.maxMatches
-            );
+          if(DEBUG) {
+              console.log(
+                  "Page %d, Current %s, Status %d, Targets %d, Matched %d, Max Matches %d",
+                  agent.viewed,
+                  agent.current,
+                  data.status,
+                  report[agent.current].Targets.length,
+                  self.matched,
+                  self.maxMatches
+              );
+          }
         }
         else
         {
@@ -139,7 +141,7 @@ Crawler.prototype.listen = function(agent, internals, grab, visited_count, repor
      */
     agent.once('stop', function()
     {
-        self.emit('stop', null, report, self.matched, self.maxMatches);
+        self.emit('stop', null, id, report, self.matched, self.maxMatches);
         agent.removeAllListeners();
     });
 }

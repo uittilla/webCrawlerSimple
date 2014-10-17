@@ -4,7 +4,7 @@ var Crawler  = require('./model/crawler_proto');
 var Queue    = require('./model/queue');
 var jobQueue = new Queue('default');
 var numJobs  = 2;
-var job;
+var job, jobs=[];
 
 function listen(crawler) {
     var target;
@@ -16,13 +16,7 @@ function listen(crawler) {
     crawler.on('stop', function(err, id, res, matched, maxMatches) {
 
         if(!err) {
-          console.log("Job complete", id);
-         /* Object.keys(res).forEach(function(value){
-              console.log("Page: %d, href: %s, Found targets #%d", res[value].Page, value, res[value].Targets.length);
-          });*/
-
-          console.log("Matched %d, Max matches %d", matched, maxMatches);
-          
+          console.log("Job complete %d Matched %d, Max matches %d", id, matched, maxMatches);
           jobQueue.deleteJob(id);
         }
     });
@@ -35,14 +29,20 @@ while(numJobs--) {
 jobQueue.on('jobReady', function job(_job) {
     console.log(_job)
     var data = JSON.parse(_job.data);
+
+    jobs.push(_job.id);
+
     listen(new Crawler(_job.id, data.link, data.targets));      
 });
 
 jobQueue.on('jobDeleted', function (id, msg) {
     console.log("Deleted", id, msg);
+    console.log("All jobs", jobs);
+    jobs.splice(jobs.indexOf(id), 1);
+
     jobQueue.disconnect();
 
-    setTimeout(function(){
+    setTimeout(function() {
        jobQueue.getJob();
     }, 1000);
 });
