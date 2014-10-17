@@ -8,7 +8,7 @@
  * Crawler uses the information pulled back from agent to gather page statistics
  */
 
-var EventEmitter, url, CrawlAgent, cheerio, Crawler, utils, DEBUG, MAX_LINKS=50, PAGE_TIMEOUT=2000;
+var EventEmitter, url, CrawlAgent, cheerio, Crawler, utils, DEBUG, MAX_LINKS=10, PAGE_TIMEOUT=2000;
 
 EventEmitter = require('events').EventEmitter;
 url          = require('url');
@@ -18,7 +18,7 @@ CrawlAgent   = require('./agent_proto');
 
 DEBUG = true;
 
-var Crawler = function(host, masters) {
+var Crawler = function(id, host, masters) {
    this.badLinks   = /\.(bmp|BMP|exe|EXE|jpeg|JPEG|swf|SWF|pdf|PDF|gif|GIFF|png|PNG|jpg|JPG|doc|DOC|avi|AVI|mov|MOV|mpg|MPG|tiff|TIFF|zip|ZIP|tgz|TGZ|xml|XML|xml|XML|rss|RSS|mp3|MP3|ogg|OGG|wav|WAV|rar|RAR)$/i;
    this.matched    = 0;
    this.maxMatches = 0;
@@ -92,7 +92,6 @@ Crawler.prototype.listen = function(agent, internals, grab, visited_count, repor
           targets               = self.matchTargets($, agent, master_regex);
           report[agent.current] = {"Page": agent.viewed, "Targets" : targets};
 
-            /*
             console.log(
                 "Page %d, Current %s, Status %d, Targets %d, Matched %d, Max Matches %d",
                 agent.viewed,
@@ -102,8 +101,7 @@ Crawler.prototype.listen = function(agent, internals, grab, visited_count, repor
                 self.matched,
                 self.maxMatches
             );
-            */
-        }        
+        }
         else
         {
           self.emit("error", {"error": err});

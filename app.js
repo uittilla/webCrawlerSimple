@@ -33,6 +33,7 @@ while(numJobs--) {
 }
 
 jobQueue.on('jobReady', function job(_job) {
+    console.log(_job)
     var data = JSON.parse(_job.data);
     listen(new Crawler(_job.id, data.link, data.targets));      
 });

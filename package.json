@@ -1,34 +1,35 @@
 {
-    "name": "webCrawlerSimple",
-    "preferGlobal": true,
-    "version": "0.5",
-    "author": "Ibbo (mark.ibbotson)",
-    "description": "a simple web crawler for gathering backlink data",
-    "contributors": [
-        {
-            "name": "",
-            "email": ""
-        }
-    ],
-    "scripts": {
-        "start": "node ./app.js"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/uittilla/webCrawlerSimple.git"
-    },
-    "keywords": [
-        "web crawler",
-        "http",
-        "spider",
-        "backlinks"
-    ],
-    "dependencies" : {
-        "cheerio" :  "0.12.3",
-        "request" :  "2.27.0"
-    },
-    "license": "MIT",
-    "engines": {
-        "node": ">=10"
+  "name": "webCrawlerSimple",
+  "preferGlobal": true,
+  "version": "0.0.5",
+  "author": "Ibbo (mark.ibbotson)",
+  "description": "a simple web crawler for gathering backlink data",
+  "contributors": [
+    {
+      "name": "",
+      "email": ""
     }
+  ],
+  "scripts": {
+    "start": "node ./app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uittilla/webCrawlerSimple.git"
+  },
+  "keywords": [
+    "web crawler",
+    "http",
+    "spider",
+    "backlinks"
+  ],
+  "dependencies": {
+    "cheerio": "0.12.3",
+    "nodestalker": "^0.1.12",
+    "request": "2.27.0"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=10"
+  }
 }
