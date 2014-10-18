@@ -22,7 +22,6 @@ var beanstalk = require('nodestalker'),
  *  }
  */
 var Queue = function (tube) {
-    __proto__: event.prototype,
     this.tube  = tube;
 }
 
@@ -56,30 +55,34 @@ Queue.prototype.reserveJob = function() {
         //console.log(job);
         self.emit('jobReady', job);
     }).onError(function(err){
-        console.log("Cannot reserve with timeout", id, err);
-    });;
+        console.log("Cannot reserve with timeout", err);
+    });
 }
 
 /**
  * Delete job
  * @param id
  */
-Queue.prototype.deleteJob = function(id) {
+Queue.prototype.deleteJob = function(id, crawler) {
     var self = this;
 
-    client.deleteJob(id).onSuccess(function(del_msg) {
-       //console.log('deleted', id);
-       // console.log('message', del_msg);
-        self.emit('jobDeleted', id, del_msg);
-    }).onError(function(err){
-        console.log("Cannot delete", id);
-    });
+    console.log("delete request for %d", id);
+    client.watch(this.tube).onSuccess(function(data) {
+        client.deleteJob(id).onSuccess(function(del_msg) {
+            console.log('deleted', id);
+            console.log('message', del_msg);
+            self.emit('jobDeleted', id, del_msg, crawler);
+        }).onError(function(err){
+            console.log("Cannot delete", id);
+        });
+    });    
 }
 
-Queue.prototype.statsTube = function(tube) {
+Queue.prototype.statsTube = function(tube, cb) {
+    var self = this;
     client.stats_tube(tube).onSuccess(function (data) {
         console.log(data);
-        self.emit('statsTube', data);
+        cb(data);
         //client.disconnect();
     });
 }

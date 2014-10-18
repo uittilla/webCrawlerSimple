@@ -3,8 +3,8 @@
 var Crawler  = require('./model/crawler_proto');
 var Queue    = require('./model/queue');
 var jobQueue = new Queue('default');
-var numJobs  = 2;
-var job, jobs=[];
+var numJobs  = 3;
+var job, jobs={};
 
 function listen(crawler) {
     var target;
@@ -14,35 +14,33 @@ function listen(crawler) {
     });
 
     crawler.on('stop', function(err, id, res, matched, maxMatches) {
-
         if(!err) {
-          console.log("Job complete %d Matched %d, Max matches %d", id, matched, maxMatches);
-          jobQueue.deleteJob(id);
+            console.log("Job complete %d Matched %d, Max matches %d", id, matched, maxMatches);
+            jobQueue.deleteJob(id, crawler);
         }
     });
 }
 
 while(numJobs--) {
+   // jobQueue = new Queue('default');
     jobQueue.getJob();
 }
 
+
 jobQueue.on('jobReady', function job(_job) {
-    console.log(_job)
     var data = JSON.parse(_job.data);
-
-    jobs.push(_job.id);
-
     listen(new Crawler(_job.id, data.link, data.targets));      
 });
 
-jobQueue.on('jobDeleted', function (id, msg) {
+jobQueue.on('jobDeleted', function (id, msg, crawler) {
     console.log("Deleted", id, msg);
-    console.log("All jobs", jobs);
-    jobs.splice(jobs.indexOf(id), 1);
-
-    jobQueue.disconnect();
-
-    setTimeout(function() {
-       jobQueue.getJob();
-    }, 1000);
+    crawler = null;
+   // jobQueue.disconnect();
+    jobQueue.statsTube("default", function(data){
+         console.log(data);
+         jobQueue.getJob();
+    });
+   // jobQueue = new Queue('default');
 });
+
+
