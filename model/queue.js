@@ -7,7 +7,6 @@
  */
 
 var beanstalk = require('nodestalker'),
-    client    = beanstalk.Client(),
     event     = require('events').EventEmitter,
     utils     = require('util');
 
@@ -22,7 +21,9 @@ var beanstalk = require('nodestalker'),
  *  }
  */
 var Queue = function (tube) {
-    this.tube  = tube;
+    this.tube   = tube;
+
+
 }
 
 utils.inherits(Queue, event);
@@ -39,8 +40,8 @@ Queue.prototype.getJob = function() {
  */
 Queue.prototype.watchTube = function() {
     var self = this;
-
-    client.watch(this.tube).onSuccess(function(data) {
+    this.client = beanstalk.Client();
+    this.client.watch(this.tube).onSuccess(function(data) {
         self.reserveJob();
     });
 }
@@ -51,7 +52,7 @@ Queue.prototype.watchTube = function() {
 Queue.prototype.reserveJob = function() {
     var self = this;
 
-    client.reserveWithTimeout(120).onSuccess(function(job) {
+    this.client.reserveWithTimeout(120).onSuccess(function(job) {
         //console.log(job);
         self.emit('jobReady', job);
     }).onError(function(err){
@@ -67,23 +68,20 @@ Queue.prototype.deleteJob = function(id, crawler) {
     var self = this;
 
     console.log("delete request for %d", id);
-    client.watch(this.tube).onSuccess(function(data) {
-        client.deleteJob(id).onSuccess(function(del_msg) {
-            console.log('deleted', id);
-            console.log('message', del_msg);
-            self.emit('jobDeleted', id, del_msg, crawler);
-        }).onError(function(err){
-            console.log("Cannot delete", id);
-        });
-    });    
+    this.client.deleteJob(id).onSuccess(function(del_msg) {
+        console.log('deleted', id);
+        console.log('message', del_msg);
+        self.emit('jobDeleted', id, del_msg, crawler);
+    }).onError(function(err){
+        console.log("Cannot delete", id, err);
+    });
 }
 
 Queue.prototype.statsTube = function(tube, cb) {
     var self = this;
-    client.stats_tube(tube).onSuccess(function (data) {
+    this.client.stats_tube(tube).onSuccess(function (data) {
         console.log(data);
         cb(data);
-        //client.disconnect();
     });
 }
 
@@ -91,7 +89,7 @@ Queue.prototype.statsTube = function(tube, cb) {
  * Kill the connection
  */
 Queue.prototype.disconnect = function() {
-    client.disconnect();
+    this.client.disconnect();
 }
 
 module.exports = Queue;

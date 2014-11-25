@@ -22,25 +22,31 @@ function listen(crawler) {
 }
 
 while(numJobs--) {
-   // jobQueue = new Queue('default');
     jobQueue.getJob();
 }
 
-
 jobQueue.on('jobReady', function job(_job) {
     var data = JSON.parse(_job.data);
-    listen(new Crawler(_job.id, data.link, data.targets));      
+    var count = 0;
+
+    if(data.link !== "") {
+        listen(new Crawler(_job.id, data.link, data.targets));
+    } else {
+        count++;
+    }
+
+    if(count > 0) {
+        console.log("Jobs done");
+        process.exit();
+    }
 });
 
 jobQueue.on('jobDeleted', function (id, msg, crawler) {
     console.log("Deleted", id, msg);
     crawler = null;
-   // jobQueue.disconnect();
+
     jobQueue.statsTube("default", function(data){
          console.log(data);
          jobQueue.getJob();
     });
-   // jobQueue = new Queue('default');
 });
-
-

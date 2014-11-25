@@ -22,7 +22,8 @@ var jobs = [
     { "link": "http://www.wosb.com", "targets": ["http://www.skybet.com", "https://www.skybet.com"]},
     { "link": "http://www.betrescue.com","targets": ["http://www.skybet.com", "https://www.skybet.com"]},
     { "link": "http://www.football-data.co.uk", "targets": ["http://www.skybet.com", "https://www.skybet.com"]},
-    { "link": "https://apps.facebook.com", "targets": ["http://www.skybet.com", "https://www.skybet.com"]}
+    { "link": "https://apps.facebook.com", "targets": ["http://www.skybet.com", "https://www.skybet.com"]},
+    { "link": "", "targets": ["http://www.skybet.com", "https://www.skybet.com"]}
 ];
 
 client.use('default').onSuccess(function (data) {
