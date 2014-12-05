@@ -1,9 +1,11 @@
 "use strict";
 
+var async    = require('async');
 var Crawler  = require('./model/crawler_proto');
 var Queue    = require('./model/queue');
-var jobQueue = new Queue('default');
-var numJobs  = 3;
+var jobQueue = new Queue("default");
+
+var numJobs  = 1;
 var job, jobs={};
 
 function listen(crawler) {
@@ -21,32 +23,38 @@ function listen(crawler) {
     });
 }
 
-while(numJobs--) {
-    jobQueue.getJob();
+function stats() {
+    jobQueue.statsTube(function(data) {
+        if(data['current-jobs-reserved'] === 0 ) {
+            console.log("Jobs remaining ", data['current-jobs-ready'] - data['current-jobs-reserved']);
+            if (data['current-jobs-reserved'] - data['current-jobs-ready'] === 0) {
+                console.log("no more jobs");
+            } else {
+                if(data['current-jobs-ready'] > 10) {
+                    var jobs = 10;
+                    while(jobs--) {
+                        jobQueue.getJob();
+                    }
+                } else {
+                    jobQueue.getJob();
+                }
+            }
+        }
+    });
 }
 
 jobQueue.on('jobReady', function job(_job) {
     var data = JSON.parse(_job.data);
-    var count = 0;
-
-    if(data.link !== "") {
-        listen(new Crawler(_job.id, data.link, data.targets));
-    } else {
-        count++;
-    }
-
-    if(count > 0) {
-        console.log("Jobs done");
-        process.exit();
-    }
+    listen(new Crawler(_job.id, data.link, data.targets));
 });
 
 jobQueue.on('jobDeleted', function (id, msg, crawler) {
     console.log("Deleted", id, msg);
     crawler = null;
 
-    jobQueue.statsTube("default", function(data){
-         console.log(data);
-         jobQueue.getJob();
-    });
+    stats();
+
 });
+
+stats();
+

@@ -22,8 +22,7 @@ var beanstalk = require('nodestalker'),
  */
 var Queue = function (tube) {
     this.tube   = tube;
-
-
+    this.client = beanstalk.Client();
 }
 
 utils.inherits(Queue, event);
@@ -40,9 +39,19 @@ Queue.prototype.getJob = function() {
  */
 Queue.prototype.watchTube = function() {
     var self = this;
-    this.client = beanstalk.Client();
     this.client.watch(this.tube).onSuccess(function(data) {
         self.reserveJob();
+    });
+}
+
+/**
+ * Call watch
+ */
+Queue.prototype.watch = function(cb) {
+    var self = this;
+    this.client = beanstalk.Client();
+    this.client.watch(this.tube).onSuccess(function(data) {
+        cb(data);
     });
 }
 
@@ -66,21 +75,20 @@ Queue.prototype.reserveJob = function() {
  */
 Queue.prototype.deleteJob = function(id, crawler) {
     var self = this;
-
-    console.log("delete request for %d", id);
+//    console.log("delete request for %d", id);
     this.client.deleteJob(id).onSuccess(function(del_msg) {
-        console.log('deleted', id);
-        console.log('message', del_msg);
+        //console.log('deleted', id);
+        //console.log('message', del_msg);
         self.emit('jobDeleted', id, del_msg, crawler);
     }).onError(function(err){
         console.log("Cannot delete", id, err);
     });
 }
 
-Queue.prototype.statsTube = function(tube, cb) {
+Queue.prototype.statsTube = function(cb) {
     var self = this;
-    this.client.stats_tube(tube).onSuccess(function (data) {
-        console.log(data);
+    console.log("Stats")
+    this.client.stats_tube(this.tube).onSuccess(function (data) {
         cb(data);
     });
 }
