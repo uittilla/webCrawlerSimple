@@ -1,6 +1,5 @@
 "use strict";
 
-var async    = require('async');
 var Crawler  = require('./model/crawler_proto');
 var Queue    = require('./model/queue');
 var jobQueue = new Queue("default");
@@ -17,7 +16,10 @@ function listen(crawler) {
 
     crawler.on('stop', function(err, id, res, matched, maxMatches) {
         if(!err) {
+           // Result Synopsis
             console.log("Job complete %d Matched %d, Max matches %d", id, matched, maxMatches);
+           // All results
+           // console.log(JSON.stringify(res));
             jobQueue.deleteJob(id, crawler);
         }
     });
@@ -51,9 +53,7 @@ jobQueue.on('jobReady', function job(_job) {
 jobQueue.on('jobDeleted', function (id, msg, crawler) {
     console.log("Deleted", id, msg);
     crawler = null;
-
     stats();
-
 });
 
 stats();
