@@ -32,10 +32,9 @@ var Crawler = function(id, host, masters) {
    grab          = true;                        // indicate to grab links or not
    visited_count = 0;                           // tally of visited pages
    report        = {};                          // report container
-   
    master_regex  = this.createTargetRegex(masters);
 
-   this.listen(id, agent, internals, grab, visited_count, report, master_regex, targets);
+   this.listen(id, agent, internals, grab, visited_count, report, master_regex, targets, host);
 
    // Setup complete start the crawl
    agent.start();   
@@ -55,8 +54,13 @@ utils.inherits(Crawler, EventEmitter);
  * @param master_regex
  * @param targets
  */
-Crawler.prototype.listen = function(id, agent, internals, grab, visited_count, report, master_regex, targets) {
+Crawler.prototype.listen = function(id, agent, internals, grab, visited_count, report, master_regex, targets, host) {
     var self = this, $=null;
+
+    if(!report[host]) {
+        report[host] = {};
+    }
+
     /**
      * Catch agent next signals
      */
@@ -89,8 +93,8 @@ Crawler.prototype.listen = function(id, agent, internals, grab, visited_count, r
             grab = false;
           }
 
-          targets               = self.matchTargets($, agent, master_regex);
-          report[agent.current] = {"Page": agent.viewed, "Targets" : targets};
+          targets                      = self.matchTargets($, agent, master_regex);
+          report[host][agent.current] = {"Page": agent.viewed, "Targets" : targets};
 
           if(DEBUG) {
               console.log(
@@ -98,7 +102,7 @@ Crawler.prototype.listen = function(id, agent, internals, grab, visited_count, r
                   agent.viewed,
                   agent.current,
                   data.status,
-                  report[agent.current].Targets.length,
+                  report[host][agent.current].Targets.length,
                   self.matched,
                   self.maxMatches
               );
@@ -141,6 +145,9 @@ Crawler.prototype.listen = function(id, agent, internals, grab, visited_count, r
      */
     agent.once('stop', function()
     {
+        report[host].maxMatches = self.maxMatches;
+        report[host].matched    = self.matched;
+        report[host].viewed     = agent.viewed;
         self.emit('stop', null, id, report, self.matched, self.maxMatches);
         agent.removeAllListeners();
     });

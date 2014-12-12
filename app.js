@@ -2,7 +2,9 @@
 
 var Crawler  = require('./model/crawler');
 var Queue    = require('./model/queue');
+var fileSys  = require('./model/fileSys');
 var jobQueue = new Queue("default");
+var fileWrite = new fileSys("./results/results.txt");
 
 var numJobs  = 1;
 var job, jobs={};
@@ -16,11 +18,11 @@ function listen(crawler) {
 
     crawler.on('stop', function(err, id, res, matched, maxMatches) {
         if(!err) {
-           // Result Synopsis
             console.log("Job complete %d Matched %d, Max matches %d", id, matched, maxMatches);
-           // All results
-           // console.log(JSON.stringify(res));
-            jobQueue.deleteJob(id, crawler);
+            fileWrite.writeFile(res, function(err, res) {
+                if(!err) jobQueue.deleteJob(id, crawler);
+                else console.log("write issues", err);
+            });
         }
     });
 }
@@ -34,6 +36,11 @@ function stats() {
             } else {
                 if(data['current-jobs-ready'] > 10) {
                     var jobs = 10;
+                    while(jobs--) {
+                        jobQueue.getJob();
+                    }
+                } else if(data['current-jobs-ready'] > 5) {
+                    var jobs = 5;
                     while(jobs--) {
                         jobQueue.getJob();
                     }
