@@ -8,13 +8,13 @@
  * Crawler uses the information pulled back from agent to gather page statistics
  */
 
-var EventEmitter, url, CrawlAgent, cheerio, Crawler, utils, DEBUG, MAX_LINKS=3, PAGE_TIMEOUT=2000;
+var EventEmitter, url, CrawlAgent, cheerio, Crawler, utils, DEBUG, MAX_LINKS=5, PAGE_TIMEOUT=2000;
 
 EventEmitter = require('events').EventEmitter;
 url          = require('url');
 cheerio      = require('cheerio');
 utils        = require('util');
-CrawlAgent   = require('./agent_proto');
+CrawlAgent   = require('./agent');
 
 DEBUG = true;
 

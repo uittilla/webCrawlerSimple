@@ -1,6 +1,6 @@
 "use strict";
 
-var Crawler  = require('./model/crawler_proto');
+var Crawler  = require('./model/crawler');
 var Queue    = require('./model/queue');
 var jobQueue = new Queue("default");
 
