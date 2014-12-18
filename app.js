@@ -33,6 +33,7 @@ function stats() {
             console.log("Jobs remaining ", data['current-jobs-ready'] - data['current-jobs-reserved']);
             if (data['current-jobs-reserved'] - data['current-jobs-ready'] === 0) {
                 console.log("no more jobs");
+                process.nextTick(function() { process.exit(); });
             } else {
                 if(data['current-jobs-ready'] > 10) {
                     var jobs = 10;
