@@ -2,7 +2,7 @@
 
 var Crawler  = require('./model/crawler');
 var Queue    = require('./model/queue');
-var fileSys  = require('./model/fileSys');
+var fileSys  = require('./model/storage');
 var jobQueue = new Queue("default");
 var fileWrite = new fileSys("./results/results.txt");
 
@@ -16,9 +16,9 @@ function listen(crawler) {
         console.error("Error", error);
     });
 
-    crawler.on('stop', function(err, id, res, matched, maxMatches) {
+    crawler.on('stop', function(err, id, res) {
         if(!err) {
-            console.log("Job complete %d Matched %d, Max matches %d", id, matched, maxMatches);
+            console.log("Job complete %d Matched %d, Max matches %d", id, res.matched, res.maxMatches);
             fileWrite.writeFile(res, function(err, res) {
                 if(!err) jobQueue.deleteJob(id, crawler);
                 else console.log("write issues", err);

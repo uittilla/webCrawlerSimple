@@ -75,10 +75,7 @@ Queue.prototype.reserveJob = function() {
  */
 Queue.prototype.deleteJob = function(id, crawler) {
     var self = this;
-//    console.log("delete request for %d", id);
     this.client.deleteJob(id).onSuccess(function(del_msg) {
-        //console.log('deleted', id);
-        //console.log('message', del_msg);
         self.emit('jobDeleted', id, del_msg, crawler);
     }).onError(function(err){
         console.log("Cannot delete", id, err);
@@ -87,7 +84,6 @@ Queue.prototype.deleteJob = function(id, crawler) {
 
 Queue.prototype.statsTube = function(cb) {
     var self = this;
-    console.log("Stats")
     this.client.stats_tube(this.tube).onSuccess(function (data) {
         cb(data);
     });

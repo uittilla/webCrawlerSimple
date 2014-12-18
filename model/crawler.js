@@ -94,7 +94,7 @@ Crawler.prototype.listen = function(id, agent, internals, grab, visited_count, r
           }
 
           targets                      = self.matchTargets($, agent, master_regex);
-          report[host][agent.current] = {"Page": agent.viewed, "Targets" : targets};
+          report[host][agent.current] = {"Page": agent.viewed, "Status": data.status, "Targets" : targets};
 
           if(DEBUG) {
               console.log(
