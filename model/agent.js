@@ -10,14 +10,14 @@
  *
  */
 
-var EventEmitter, url, request, utils, DEBUG;
+var EventEmitter, url, request, utils, DEBUG, config;
 
 EventEmitter = require('events').EventEmitter;
 url          = require('url');
 request      = require('request');
 utils        = require('util');
-DEBUG        = true;
-
+config       = require('../config.json');
+DEBUG        = config.DEBUG;
 
 var Agent = function(host) {
     
@@ -34,7 +34,6 @@ var Agent = function(host) {
     this.host =  tmp.protocol + "//" + (tmp.host || tmp.hostname);
 };
 
-
 utils.inherits(Agent, EventEmitter);
 
 Agent.prototype.open = function() {
@@ -45,7 +44,7 @@ Agent.prototype.open = function() {
         "uri"            : self.current,
         "timeout"        : 10000,          // initial timeout
         "maxRedirects"   : 4,              // max redirects allowed
-        "followRedirect" : !!(self.viewed === 0),
+        "followRedirect" : (self.viewed === 0),
         "encoding"       : 'utf-8',
         "retries"        : 2,
         "headers"        : {
@@ -54,34 +53,27 @@ Agent.prototype.open = function() {
     };
 
     // make the request
-    request(options, function (error, res, body)
-    {
-        if(!error)
-        {
+    request(options, function (error, res, body) {
+        if(!error) {
             status = res.statusCode;
 
             // Redirects found under this.redirects
-            if (this.redirects && this.redirects.length > 0)
-            {
+            if (this.redirects && this.redirects.length > 0) {
                 status = this.redirects[this.redirects.length - 1].statusCode;  // we want the status of a redirect
                 self.formatHostFromRedirect(this.redirects);
             }
 
-            if(status < 400)
-            {
-               self.emit('next', null, {"body": body, "status": status, "host": self.host});
-            }
-            else
-            {
+            if(status < 400) { // GOOD
+                self.emit('next', null, {"body": body, "status": status, "host": self.host});
+            } else {           // BAD
                 self.emit('next', {"host": self.current, "status": status}, null);
             }
         }
-        else
-        {   // report back error (will continue the crawl)
+        else {   // report back error (will continue the crawl)
             self.emit('next', {"error": error, "host": options, "status": status || 0 }, null);
         }
     });
-}
+};
 
 /**
  * On redirect change out host details
@@ -92,16 +84,14 @@ Agent.prototype.formatHostFromRedirect = function(redirects) {
         tmp      = url.parse(location);
 
     this.host =  tmp.protocol + "//" + (tmp.host || tmp.hostname);
-}
+};
 
 /**
  * Gets the next link to visit
  */
 Agent.prototype.getNext = function() {
-
     // shift pending to current
-    if(this.seen() > 0 && this.pending() > 0)
-    {
+    if(this.seen() > 0 && this.pending() > 0) {
         this.current = url.resolve(this.host, this._pending.shift());
     }
 
@@ -113,7 +103,7 @@ Agent.prototype.getNext = function() {
 
     // increment viewed
     this.viewed++;
-}
+};
 
 /**
  * Adds link to pending array
@@ -121,30 +111,31 @@ Agent.prototype.getNext = function() {
  */
 Agent.prototype.addLink = function(link) {
     this._pending.push(link);
-}
+};
 
 /**
  * Ensures we do not have duplicate links
  * @return bool
  */
 Agent.prototype.findLink = function(link) {
+    var l;
     // check pending
-    for(var l in this._pending)
-    {
-        if(this._pending[l] === link)
+    for(l in this._pending) {
+        if(this._pending[l] === link) {
             return true;
+        }
     }
 
     // check seen
-    for(var l in this._seen)
-    {
-        if(this._seen[l] === link)
+    for(l in this._seen) {
+        if(this._seen[l] === link) {
             return true;
+        }
     }
 
     // check current
     return link === this.current;
-}
+};
 
 /**
  * Starts the agent
@@ -152,7 +143,7 @@ Agent.prototype.findLink = function(link) {
 Agent.prototype.start = function () {
     this.running = true;
     this.getNext();
-}
+};
 
 /**
  * Stops the agent
@@ -161,14 +152,14 @@ Agent.prototype.stop = function () {
     this.running = false;
     this.emit('stop');
     this.removeAllListeners();
-}
+};
 
 /**
  * Get next page
  */
 Agent.prototype.next = function () {
     this.getNext();
-}
+};
 
 /**
  * Return the number of pages pending
@@ -176,7 +167,7 @@ Agent.prototype.next = function () {
  */
 Agent.prototype.pending = function() {
     return (this._pending.length || 0);
-}
+};
 
 /**
  * Return the number of pages seen
@@ -184,7 +175,6 @@ Agent.prototype.pending = function() {
  */
 Agent.prototype.seen = function () {
     return (this._seen.length || 0);
-}
-
+};
 
 module.exports = Agent;

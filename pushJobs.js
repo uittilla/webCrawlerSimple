@@ -1,3 +1,5 @@
+"use strict";
+
 var bs = require('nodestalker'),
         client = bs.Client('127.0.0.1:11300');
 

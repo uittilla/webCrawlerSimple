@@ -1,0 +1,5 @@
+{
+  "MAX_LINKS":    5,
+  "PAGE_TIMEOUT": 5000,
+  "DEBUG":        true
+}
