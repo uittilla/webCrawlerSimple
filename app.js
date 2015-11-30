@@ -45,6 +45,7 @@ function listen(crawler) {
  */
 function stats() {
     jobQueue.statsTube(function (data) {
+        var jobs = 10;
         if (data['current-jobs-reserved'] === 0) {
 
             console.log("Jobs remaining ", data['current-jobs-ready'] - data['current-jobs-reserved']);
@@ -55,12 +56,16 @@ function stats() {
 
             } else {
                 if (data['current-jobs-ready'] > 10) {
-                    var jobs = 10;
-                    while (jobs--) { jobQueue.getJob(); }
+                    jobs=10;
+                    while (jobs--) {
+                        jobQueue.getJob();
+                    }
 
-                } else if (data['current-jobs-ready'] > 5) {
-                    var jobs = 5;
-                    while (jobs--) { jobQueue.getJob(); }
+                } else if (data['current-jobs-ready'] < 10 && data['current-jobs-ready'] > 5) {
+                    jobs = 5;
+                    while (jobs--) {
+                        jobQueue.getJob();
+                    }
 
                 } else {
                     jobQueue.getJob();
@@ -88,4 +93,3 @@ jobQueue.on('jobDeleted', function (id, msg, crawler) {
 });
 
 stats();
-

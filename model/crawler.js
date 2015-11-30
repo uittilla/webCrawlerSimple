@@ -25,7 +25,7 @@ Crawler = function(id, host, masters) {
    this.badLinks   = /\.(bmp|BMP|exe|EXE|jpeg|JPEG|swf|SWF|pdf|PDF|gif|GIFF|png|PNG|jpg|JPG|doc|DOC|avi|AVI|mov|MOV|mpg|MPG|tiff|TIFF|zip|ZIP|tgz|TGZ|xml|XML|xml|XML|rss|RSS|mp3|MP3|ogg|OGG|wav|WAV|rar|RAR)$/i;
    this.matched    = 0;
    this.maxMatches = 0;
-   
+
    console.log("Crawler init", host);
    var report, master_regex, agent, self, $, internals, grab, visited_count, targets;
 
@@ -40,7 +40,7 @@ Crawler = function(id, host, masters) {
    this.listen(id, agent, internals, grab, visited_count, report, master_regex, targets, host);
 
    // Setup complete start the crawl
-   agent.start();   
+   agent.start();
 };
 
 utils.inherits(Crawler, EventEmitter);
@@ -105,7 +105,9 @@ Crawler.prototype.listen = function(id, agent, internals, grab, visited_count, r
         }
 
         // stop when pending is empty
-        if(agent.pending() === 0 && agent.seen() > 1) { agent.stop(); }
+        if(agent.pending() === 0 && agent.seen() > 1) {
+            agent.stop(); 
+        }
         else { // next
             setTimeout(function() {
                 agent.next();

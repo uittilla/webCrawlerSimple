@@ -49,7 +49,6 @@ Queue.prototype.watchTube = function() {
  */
 Queue.prototype.watch = function(cb) {
     var self = this;
-    this.client = beanstalk.Client();
     this.client.watch(this.tube).onSuccess(function(data) {
         cb(data);
     });
@@ -82,6 +81,10 @@ Queue.prototype.deleteJob = function(id, crawler) {
     });
 }
 
+/**
+ * Tube stats
+ * @param cb
+ */
 Queue.prototype.statsTube = function(cb) {
     var self = this;
     this.client.stats_tube(this.tube).onSuccess(function (data) {
